@@ -446,6 +446,26 @@ MainWindow::MainWindow(bool restoreWindowPosition)
 	// Show self
 	updateTitle();
 	show();
+
+	static bool disclaimerShown = false;
+	if(!disclaimerShown) {
+		disclaimerShown = true;
+		QMessageBox forkMessage(QMessageBox::Icon::Information, "Fork Disclaimer",
+				"<h1>DISCLAIMER</h1>\n"
+				"<p>This is an unofficial fork of Drawpile - <strong>do not bother the maintainers of Drawpile with errors you experience when using this!</strong></p>"
+				"<p>This fork is made by askmeaboutloom. I added the following features that may hopefully end up in an official release of Drawpile soon:</p>"
+				"<ul>"
+				"<li>Input presets. Lets you define multiple different smoothing and pressure configurations, which can then be assigned to brushes.</li>"
+				"<li>Clipping group layers. They preserve alpha of the next non-clipping-group layer below them, like in Paint Tool SAI. Kinda experimental. Probably doesn't interact well with animations yet.</li>"
+				"<li>Screen and HSV blend modes for layers and brushes.</li>"
+				"<li>Distort aka Free Transform/Deform of selections, along with some usability improvements of selections.</li>"
+				"<li>A setting to change the width of the brush cursor outline because I keep losing track of it.</li>"
+				"<li>Bugfix for <a href=\"https://github.com/drawpile/Drawpile/issues/940\">#940</a>.</li>"
+				"</ul>"
+				"<p>This software comes with absolutely no warranty. Everything not allowed is forbidden. Do not pass go. You may bother me with issues if you know how to contact me.</p>",
+				QMessageBox::Ok, this);
+		forkMessage.exec();
+	}
 }
 
 MainWindow::~MainWindow()
@@ -2134,11 +2154,13 @@ void MainWindow::markSpotForRecording()
 
 void MainWindow::about()
 {
-	QMessageBox::about(nullptr, tr("About Drawpile"),
+	QMessageBox::about(nullptr, tr("About Drawpile " DRAWPILE_VERSION),
 			QStringLiteral("<p><b>Drawpile %1</b><br>").arg(DRAWPILE_VERSION) +
 			tr("A collaborative drawing program.") + QStringLiteral("</p>"
 
 			"<p>Copyright © 2006-2019 Calle Laakkonen</p>"
+
+			"<p>UNOFFICIAL PATCHES made 2020 by askmeaboutloom.<p>"
 
 			"<p>This program is free software; you may redistribute it and/or "
 			"modify it under the terms of the GNU General Public License as " 
