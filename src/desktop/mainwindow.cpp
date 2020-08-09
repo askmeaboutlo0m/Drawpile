@@ -446,6 +446,19 @@ MainWindow::MainWindow(bool restoreWindowPosition)
 	// Show self
 	updateTitle();
 	show();
+
+	QMessageBox forkMessage(QMessageBox::Icon::Information, "Fork Disclaimer",
+			"<h1>DISCLAIMER</h1>\n"
+			"<p>This is an unofficial fork of Drawpile - <strong>do not bother the maintainers of Drawpile with errors you experience when using this!</strong></p>"
+			"<p>This fork is made by askmeaboutloom. I added the following features that should hopefully end up in an official release of Drawpile soon:</p>"
+			"<ul>"
+			"<li>HSV blend modes for layers and brushes.</li>"
+			"<li>Distort aka Free Transform/Deform of selections, along with some usability improvements of selections.</li>"
+			"<li>A setting to change the width of the brush cursor outline because I keep losing track of it.</li>"
+			"</ul>"
+			"<p>This software comes with absolutely no warranty. Everything not allowed is forbidden. Do not pass go. You may bother me with issues if you know how to contact me. Once a new version of Drawpile is released, upgrade to that because it'll probably have all the features you see here, but in a much better and more official capacity.</p>",
+			QMessageBox::Ok, this);
+	forkMessage.exec();
 }
 
 MainWindow::~MainWindow()
@@ -2134,11 +2147,13 @@ void MainWindow::markSpotForRecording()
 
 void MainWindow::about()
 {
-	QMessageBox::about(nullptr, tr("About Drawpile"),
+	QMessageBox::about(nullptr, tr("About Drawpile FORK"),
 			QStringLiteral("<p><b>Drawpile %1</b><br>").arg(DRAWPILE_VERSION) +
 			tr("A collaborative drawing program.") + QStringLiteral("</p>"
 
 			"<p>Copyright © 2006-2019 Calle Laakkonen</p>"
+
+			"<p>!!! UNOFFICIAL FORK !!! Patches made 2020 by askmeaboutloom.<p>"
 
 			"<p>This program is free software; you may redistribute it and/or "
 			"modify it under the terms of the GNU General Public License as " 

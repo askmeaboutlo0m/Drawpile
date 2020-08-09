@@ -61,7 +61,7 @@ DrawpileApp::DrawpileApp(int &argc, char **argv)
 	setOrganizationName("drawpile");
 	setOrganizationDomain("drawpile.net");
 	setApplicationName("drawpile");
-	setApplicationDisplayName("Drawpile");
+	setApplicationDisplayName("Drawpile UNOFFICIAL FORK");
 	setApplicationVersion(DRAWPILE_VERSION);
 	setWindowIcon(QIcon(":/icons/drawpile.png"));
 }
