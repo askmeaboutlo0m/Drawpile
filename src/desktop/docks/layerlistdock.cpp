@@ -478,6 +478,7 @@ void LayerList::showPropertiesOfIndex(QModelIndex index)
 			item.blend,
 			item.hidden,
 			item.fixed,
+			item.clippingGroup,
 			index.data(canvas::LayerListModel::IsDefaultRole).toBool(),
 		});
 		m_layerProperties->show();
@@ -611,7 +612,8 @@ void LayerList::emitPropertyChangeCommands(const dialogs::LayerProperties::Chang
 	static const unsigned int CHANGE_LAYER_ATTRIBUTES =
 			dialogs::LayerProperties::CHANGE_OPACITY |
 			dialogs::LayerProperties::CHANGE_BLEND |
-			dialogs::LayerProperties::CHANGE_FIXED;
+			dialogs::LayerProperties::CHANGE_FIXED |
+			dialogs::LayerProperties::CHANGE_CLIPPING_GROUP;
 
 	uint16_t layerId = c.id;
 	QModelIndex layerIndex = m_canvas->layerlist()->layerIndex(layerId);
@@ -631,6 +633,9 @@ void LayerList::emitPropertyChangeCommands(const dialogs::LayerProperties::Chang
 		ChangeFlags<uint8_t> flags;
 		if(c.changes & dialogs::LayerProperties::CHANGE_FIXED) {
 			flags.set(protocol::LayerAttributes::FLAG_FIXED, c.fixed);
+		}
+		if(c.changes & dialogs::LayerProperties::CHANGE_CLIPPING_GROUP) {
+			flags.set(protocol::LayerAttributes::FLAG_CLIPPING_GROUP, c.clippingGroup);
 		}
 
 		int opacity = -1;
