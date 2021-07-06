@@ -17,8 +17,48 @@
    along with Drawpile.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "undo.h"
+#include <QtEndian>
 
 namespace protocol {
+
+UndoDepth *UndoDepth::deserialize(uint8_t ctx, const uchar *data, uint len)
+{
+	if(len != 2) {
+		return nullptr;
+	}
+	return new UndoDepth(ctx, qFromBigEndian<uint16_t>(data));
+}
+
+UndoDepth *UndoDepth::fromText(uint8_t ctx, const Kwargs &kwargs)
+{
+	return new UndoDepth(ctx, kwargs["depth"].toUInt());
+}
+
+int UndoDepth::payloadLength() const
+{
+	return 2;
+}
+
+int UndoDepth::serializePayload(uchar *data) const
+{
+	uchar *ptr = data;
+	qToBigEndian(m_depth, ptr); ptr += 2;
+	return ptr - data;
+}
+
+bool UndoDepth::payloadEquals(const Message &m) const
+{
+	const UndoDepth &ud = static_cast<const UndoDepth&>(m);
+	return depth() == ud.depth();
+}
+
+Kwargs UndoDepth::kwargs() const
+{
+	Kwargs kw;
+	kw["depth"] = depth();
+	return kw;
+}
+
 
 Undo *Undo::deserialize(uint8_t ctx, const uchar *data, uint len)
 {

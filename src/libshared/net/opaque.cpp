@@ -79,6 +79,7 @@ NullableMessageRef OpaqueMessage::decode(MessageType type, uint8_t ctx, const uc
 	case MSG_ANNOTATION_EDIT: msg = AnnotationEdit::deserialize(ctx, data, len); break;
 	case MSG_ANNOTATION_DELETE: msg = AnnotationDelete::deserialize(ctx, data, len); break;
 	case MSG_UNDOPOINT: msg = UndoPoint::deserialize(ctx, data, len); break;
+	case MSG_UNDO_DEPTH: msg = UndoDepth::deserialize(ctx, data, len); break;
 	case MSG_UNDO: msg = Undo::deserialize(ctx, data, len); break;
 	case MSG_FILLRECT: msg = FillRect::deserialize(ctx, data, len); break;
 	case MSG_REGION_MOVE: msg = MoveRegion::deserialize(ctx, data, len); break;

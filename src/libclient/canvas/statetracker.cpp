@@ -148,6 +148,7 @@ StateTracker::StateTracker(paintcore::LayerStack *image, LayerListModel *layerli
 		m_layerlist(layerlist),
 		m_myId(myId),
 		m_myLastLayer(-1),
+		m_undoDepthLimit(protocol::DEFAULT_UNDO_DEPTH_LIMIT),
 		_showallmarkers(false),
 		m_hasParticipated(false),
 		m_localPenDown(false),
@@ -358,6 +359,9 @@ void StateTracker::handleCommand(protocol::MessagePtr msg, bool replay, int pos)
 			break;
 		case MSG_UNDOPOINT:
 			handleUndoPoint(msg.cast<UndoPoint>(), replay, pos);
+			break;
+		case MSG_UNDO_DEPTH:
+			handleUndoDepth(msg.cast<UndoDepth>());
 			break;
 		case MSG_UNDO:
 			handleUndo(msg.cast<Undo>());
@@ -784,7 +788,7 @@ void StateTracker::handleUndoPoint(const protocol::UndoPoint &cmd, bool replay, 
 		int upCount = 1;
 
 		// Mark undone actions as GONE
-		while(m_history.isValidIndex(i) && upCount < protocol::UNDO_DEPTH_LIMIT) {
+		while(m_history.isValidIndex(i) && upCount < m_undoDepthLimit) {
 			protocol::MessagePtr msg = m_history.at(i);
 			if(msg->type() == protocol::MSG_UNDOPOINT)
 				++upCount;
@@ -799,7 +803,7 @@ void StateTracker::handleUndoPoint(const protocol::UndoPoint &cmd, bool replay, 
 		}
 
 		// Keep rewinding until the oldest reachable undo point is found
-		while(m_history.isValidIndex(i) && upCount < protocol::UNDO_DEPTH_LIMIT) {
+		while(m_history.isValidIndex(i) && upCount < m_undoDepthLimit) {
 			if(m_history.at(i)->type() == protocol::MSG_UNDOPOINT) {
 				++upCount;
 			}
@@ -807,7 +811,7 @@ void StateTracker::handleUndoPoint(const protocol::UndoPoint &cmd, bool replay, 
 		}
 
 		// Release all state savepoints older then the oldest UndoPoint
-		if(upCount>=protocol::UNDO_DEPTH_LIMIT) {
+		if(upCount>=m_undoDepthLimit) {
 			if(!m_localfork.isEmpty())
 				i = qMin(i, m_localfork.offset() - 1);
 
@@ -844,6 +848,12 @@ void StateTracker::handleUndoPoint(const protocol::UndoPoint &cmd, bool replay, 
 		m_hasParticipated = true;
 }
 
+void StateTracker::handleUndoDepth(const protocol::UndoDepth &cmd)
+{
+	m_undoDepthLimit = cmd.depth();
+	qDebug() << "undo depth limit set to" << m_undoDepthLimit;
+}
+
 void StateTracker::handleUndo(protocol::Undo &cmd)
 {
 	// Undo/redo commands are never replayed, so start
@@ -859,7 +869,7 @@ void StateTracker::handleUndo(protocol::Undo &cmd)
 	if(cmd.isRedo()) {
 		// Find the oldest undone UndoPoint
 		int redostart = pos;
-		while(m_history.isValidIndex(--pos) && upCount <= protocol::UNDO_DEPTH_LIMIT) {
+		while(m_history.isValidIndex(--pos) && upCount <= m_undoDepthLimit) {
 			const protocol::MessagePtr msg = m_history.at(pos);
 			if(msg->type() == protocol::MSG_UNDOPOINT) {
 				++upCount;
@@ -869,6 +879,9 @@ void StateTracker::handleUndo(protocol::Undo &cmd)
 					else
 						break;
 				}
+			} else if(msg->type() == protocol::MSG_UNDO_DEPTH) {
+				qDebug() << "redo for user" << cmd.contextId() << "reached undo depth change";
+				break;
 			}
 		}
 
@@ -880,18 +893,21 @@ void StateTracker::handleUndo(protocol::Undo &cmd)
 
 	} else {
 		// Find the newest UndoPoint not marked as undone.
-		while(m_history.isValidIndex(--pos) && upCount <= protocol::UNDO_DEPTH_LIMIT) {
+		while(m_history.isValidIndex(--pos) && upCount <= m_undoDepthLimit) {
 			const protocol::MessagePtr msg = m_history.at(pos);
 			if(msg->type() == protocol::MSG_UNDOPOINT) {
 				++upCount;
 				if(msg->contextId() == ctxid && msg->undoState() == protocol::DONE)
 					break;
+			} else if (msg->type() == protocol::MSG_UNDO_DEPTH) {
+				qDebug() << "user" << cmd.contextId() << "cannot undo across an undo depth change";
+				return;
 			}
 		}
 	}
 
-	if(upCount > protocol::UNDO_DEPTH_LIMIT) {
-		qDebug() << "user" << cmd.contextId() << "cannot undo/redo beyond history limit";
+	if(upCount > m_undoDepthLimit) {
+		qDebug() << "user" << cmd.contextId() << "cannot undo/redo beyond history limit" << m_undoDepthLimit;
 		return;
 	}
 
@@ -1053,7 +1069,7 @@ void StateTracker::handleTruncateHistory()
 	int upCount = 0;
 
 	qWarning("Truncating undo history at %d", pos);
-	while(m_history.isValidIndex(pos) && upCount <= protocol::UNDO_DEPTH_LIMIT) {
+	while(m_history.isValidIndex(pos) && upCount <= m_undoDepthLimit) {
 		protocol::MessagePtr msg = m_history.at(pos);
 
 		if(msg->type() == protocol::MSG_UNDOPOINT) {

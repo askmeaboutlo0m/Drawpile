@@ -66,6 +66,9 @@ struct State {
 	// List of users who have participated in the session somehow
 	// (other than just loggin in/out)
 	QSet<int> users_seen;
+
+	// Keep track of the current undo depth limit
+	int undoDepthLimit = protocol::DEFAULT_UNDO_DEPTH_LIMIT;
 };
 
 static inline void mark_delete(FilterIndex &i) {
@@ -137,6 +140,10 @@ static void filterMessage(const FilterOptions &options, State &state, protocol::
 		mark_delete(state.index.last());
 		return;
 
+	case MSG_UNDO_DEPTH:
+		state.undoDepthLimit = msg.cast<protocol::UndoDepth>().depth();
+		break;
+
 	default: break;
 	}
 
@@ -159,7 +166,7 @@ static void filterMessage(const FilterOptions &options, State &state, protocol::
 		if(cmd.isRedo()) {
 			// Find the start of the undo sequence (oldest undone UndoPoint)
 			int redostart = pos;
-			while(--pos>=0 && upCount <= protocol::UNDO_DEPTH_LIMIT) {
+			while(--pos>=0 && upCount <= state.undoDepthLimit) {
 				const FilterIndex u = state.index[pos];
 				if(u.type == protocol::MSG_UNDOPOINT) {
 					++upCount;
@@ -169,6 +176,9 @@ static void filterMessage(const FilterOptions &options, State &state, protocol::
 						else
 							break;
 					}
+				} else if(u.type == protocol::MSG_UNDO_DEPTH) {
+					qDebug() << "redo for user" << cmd.contextId() << "reached undo depth change";
+					break;
 				}
 			}
 
@@ -182,19 +192,23 @@ static void filterMessage(const FilterOptions &options, State &state, protocol::
 		} else {
 			// Search for undoable actions from the end of the
 			// command stream towards the beginning
-			while(--pos>=0 && upCount <= protocol::UNDO_DEPTH_LIMIT) {
+			while(--pos>=0 && upCount <= state.undoDepthLimit) {
 				const FilterIndex u = state.index[pos];
 
 				if(u.type == protocol::MSG_UNDOPOINT) {
 					++upCount;
 					if(u.ctxid == ctxid && undostate(u) == protocol::DONE)
 						break;
+				} else if (u.type == protocol::MSG_UNDO_DEPTH) {
+					qDebug() << "user" << cmd.contextId() << "cannot undo across an undo depth change";
+					mark_delete(state.index.last());
+					return;
 				}
 			}
 		}
 
-		if(upCount > protocol::UNDO_DEPTH_LIMIT) {
-			qDebug() << "user" << cmd.contextId() << "cannot undo/redo beyond history limit";
+		if(upCount > state.undoDepthLimit) {
+			qDebug() << "user" << cmd.contextId() << "cannot undo/redo beyond history limit" << state.undoDepthLimit;
 			mark_delete(state.index.last());
 			return;
 		}

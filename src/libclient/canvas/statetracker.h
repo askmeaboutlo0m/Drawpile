@@ -45,6 +45,7 @@ namespace protocol {
 	class PutTile;
 	class FillRect;
 	class UndoPoint;
+	class UndoDepth;
 	class Undo;
 	class AnnotationCreate;
 	class AnnotationReshape;
@@ -263,6 +264,7 @@ private:
 
 	// Undo/redo
 	void handleUndoPoint(const protocol::UndoPoint &cmd, bool replay, int pos);
+	void handleUndoDepth(const protocol::UndoDepth &cmd);
 	void handleUndo(protocol::Undo &cmd);
 	void makeSavepoint(int pos);
 	void revertSavepointAndReplay(const StateSavepoint savepoint);
@@ -284,6 +286,7 @@ private:
 	History m_history;
 	QList<StateSavepoint> m_savepoints;
 	QList<StateSavepoint> m_resetpoints;
+	int m_undoDepthLimit;
 
 	LocalFork m_localfork;
 

@@ -24,13 +24,36 @@
 namespace protocol {
 
 /**
- * @brief Undo history depth
+ * @brief Undo history depth, unless otherwise specified
  *
- * To ensure undo works consistently, each client must store at least this many
- * undo points in their session history, but also limit the functional undo depth
- * to this many points.
+ * Older clients only support exactly this undo depth, no more and no less. With
+ * the introduction of the UNDO_DEPTH message, the undo depth became dynamic.
+ * That means this value is also the fallback undo depth limit for compatibility
+ * with those older clients.
  */
-static const int UNDO_DEPTH_LIMIT = 30;
+static const int DEFAULT_UNDO_DEPTH_LIMIT = 30;
+
+class UndoDepth : public Message
+{
+public:
+	UndoDepth(uint8_t ctx, uint16_t depth) : Message(MSG_UNDO_DEPTH, ctx), m_depth(depth) { }
+
+	static UndoDepth *deserialize(uint8_t ctx, const uchar *data, uint len);
+	static UndoDepth *fromText(uint8_t ctx, const Kwargs &kwargs);
+
+	uint16_t depth() const { return m_depth; }
+
+	QString messageName() const override { return QStringLiteral("undodepth"); }
+
+protected:
+	int payloadLength() const override;
+	int serializePayload(uchar *data) const override;
+	bool payloadEquals(const Message &m) const override;
+	Kwargs kwargs() const override;
+
+private:
+	uint16_t m_depth;
+};
 
 /**
  * @brief Undo demarcation point
