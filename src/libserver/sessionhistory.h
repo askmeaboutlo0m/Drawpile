@@ -126,6 +126,10 @@ public:
 	//! Get the reset image base size
 	uint autoResetThresholdBase() const { return m_autoResetBaseSize; }
 
+	virtual void setUndoDepthLimit(int depth) = 0;
+
+	virtual int undoDepthLimit() const = 0;
+
 	/**
 	 * @brief Add a new message to the history
 	 *

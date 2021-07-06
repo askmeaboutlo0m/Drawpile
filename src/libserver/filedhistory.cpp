@@ -22,6 +22,7 @@
 #include "../libshared/util/filename.h"
 #include "../libshared/record/header.h"
 #include "../libshared/net/meta.h"
+#include "../libshared/net/undo.h"
 
 #include <QFile>
 #include <QJsonObject>
@@ -43,6 +44,7 @@ FiledHistory::FiledHistory(const QDir &dir, QFile *journal, const QString &id, c
 	  m_founder(founder),
 	  m_version(version),
 	  m_maxUsers(254),
+	  m_undoDepthLimit(protocol::DEFAULT_UNDO_DEPTH_LIMIT),
 	  m_flags(),
 	  m_fileCount(0),
 	  m_archive(false)
@@ -223,6 +225,10 @@ bool FiledHistory::load()
 
 		} else if(cmd == "AUTORESET") {
 			m_autoResetThreshold = params.toUInt();
+
+		} else if(cmd == "UNDODEPTH") {
+			m_undoDepthLimit = qBound(protocol::MIN_UNDO_DEPTH_LIMIT,
+					params.toInt(), protocol::MAX_UNDO_DEPTH_LIMIT);
 
 		} else if(cmd == "TITLE") {
 			m_title = params;
@@ -495,6 +501,17 @@ void FiledHistory::setAutoResetThreshold(uint limit)
 	if(newLimit != m_autoResetThreshold) {
 		m_autoResetThreshold = newLimit;
 		m_journal->write(QString("AUTORESET %1\n").arg(newLimit).toUtf8());
+		m_journal->flush();
+	}
+}
+
+void FiledHistory::setUndoDepthLimit(int depth)
+{
+	uint16_t newDepth = qBound(protocol::MIN_UNDO_DEPTH_LIMIT,
+			depth, protocol::MAX_UNDO_DEPTH_LIMIT);
+	if(newDepth != m_undoDepthLimit) {
+		m_undoDepthLimit = newDepth;
+		m_journal->write(QString("UNDODEPTH %1\n").arg(newDepth).toUtf8());
 		m_journal->flush();
 	}
 }

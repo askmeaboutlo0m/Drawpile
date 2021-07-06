@@ -23,6 +23,7 @@
 #include "net/announcementlist.h"
 #include "document.h"
 #include "../libshared/net/meta2.h"
+#include "../libshared/net/undo.h"
 #include "canvas/canvasmodel.h"
 #include "canvas/aclfilter.h"
 #include "parentalcontrols/parentalcontrols.h"
@@ -67,6 +68,7 @@ SessionSettingsDialog::SessionSettingsDialog(Document *doc, QWidget *parent)
 
 	connect(m_ui->sessionPassword, &QLabel::linkActivated, this, &SessionSettingsDialog::changePassword);
 	connect(m_ui->opword, &QLabel::linkActivated, this, &SessionSettingsDialog::changeOpword);
+	connect(m_ui->undoLimit, &QLabel::linkActivated, this, &SessionSettingsDialog::changeUndoLimit);
 
 	connect(m_doc, &Document::sessionTitleChanged, m_ui->title, &QLineEdit::setText);
 	connect(m_doc, &Document::sessionPreserveChatChanged, m_ui->preserveChat, &QCheckBox::setChecked);
@@ -92,6 +94,10 @@ SessionSettingsDialog::SessionSettingsDialog(Document *doc, QWidget *parent)
 		m_ui->baseResetThreshold->setText(QStringLiteral("+ %1 MB").arg(threshold/(1024.0*1024.0), 0, 'f', 1));
 	});
 
+	connect(m_doc, &Document::sessionUndoDepthLimitChanged, this, [this](int undoDepthLimit) {
+		m_ui->undoLimit->setProperty("undoDepthLimit", undoDepthLimit);
+		updateUndoLimitLabel();
+	});
 
 	// Set up permissions tab
 	connect(m_ui->permissionPresets, &widgets::PresetSelector::saveRequested, this, &SessionSettingsDialog::permissionPresetSaving);
@@ -237,6 +243,7 @@ void SessionSettingsDialog::onOperatorModeChanged(bool op)
 	m_ui->permissionPresets->setWriteOnly(!op);
 	updatePasswordLabel(m_ui->sessionPassword);
 	updatePasswordLabel(m_ui->opword);
+	updateUndoLimitLabel();
 }
 
 QComboBox *SessionSettingsDialog::featureBox(canvas::Feature f)
@@ -358,6 +365,12 @@ void SessionSettingsDialog::updatePasswordLabel(QLabel *label)
 	label->setText(txt);
 }
 
+void SessionSettingsDialog::updateUndoLimitLabel()
+{
+	QString txt = m_op ? QStringLiteral("<b>%1</b> (<a href=\"#\">change</a>)") : QStringLiteral("<b>%1</b>");
+	m_ui->undoLimit->setText(txt.arg(m_ui->undoLimit->property("undoDepthLimit").toInt()));
+}
+
 void SessionSettingsDialog::sendSessionConf()
 {
 	if(!m_sessionconf.isEmpty()) {
@@ -445,6 +458,26 @@ void SessionSettingsDialog::changeOpword()
 	);
 	if(ok)
 		changeSesionConf("opword", newpass, true);
+}
+
+void SessionSettingsDialog::changeUndoLimit()
+{
+	bool ok;
+	uint16_t depth = QInputDialog::getInt(
+		this,
+		tr("Undo Limit"),
+		tr("<p>Choose a new undo limit.</p>"
+			"<p><strong>Warning:</strong> Undos beyond the point of changing this are not possible.</p>"
+			"<p>Increasing this does not let you undo things that happened in the past!</p>"),
+		m_ui->undoLimit->property("undoDepthLimit").toInt(),
+		protocol::MIN_UNDO_DEPTH_LIMIT,
+		protocol::MAX_UNDO_DEPTH_LIMIT,
+		1,
+		&ok
+	);
+	if(ok) {
+		changeSesionConf("undoDepthLimit", depth, true);
+	}
 }
 
 }

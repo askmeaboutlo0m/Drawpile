@@ -180,6 +180,7 @@ signals:
 	void sessionResetThresholdChanged(double threshold);
 	void baseResetThresholdChanged(double threshold);
 	void autoResetTooLarge(int maxSize);
+	void sessionUndoDepthLimitChanged(int depth);
 
 	void catchupProgress(int perent);
 
@@ -253,6 +254,7 @@ private:
 	void setSessionNsfm(bool nsfm);
 	void setSessionDeputies(bool deputies);
 	void setRoomcode(const QString &roomcode);
+	void setSessionUndoDepthLimit(int depth);
 
 	void copyFromLayer(int layer);
 
@@ -294,6 +296,7 @@ private:
 	int m_sessionHistoryMaxSize;
 	int m_sessionResetThreshold;
 	int m_baseResetThreshold;
+	int m_sessionUndoDepthLimit;
 };
 
 #endif // DOCUMENT_H

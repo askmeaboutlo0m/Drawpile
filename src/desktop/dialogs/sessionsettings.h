@@ -81,11 +81,13 @@ private slots:
 
 	void changePassword();
 	void changeOpword();
+	void changeUndoLimit();
 
 	void changeSesionConf(const QString &key, const QJsonValue &value, bool now=false);
 	void sendSessionConf();
 
 	void updatePasswordLabel(QLabel *label);
+	void updateUndoLimitLabel();
 
 protected:
 	void showEvent(QShowEvent *event) override;

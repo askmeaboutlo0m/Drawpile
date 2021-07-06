@@ -32,6 +32,8 @@ namespace protocol {
  * with those older clients.
  */
 static const int DEFAULT_UNDO_DEPTH_LIMIT = 30;
+static const int MIN_UNDO_DEPTH_LIMIT = 30;
+static const int MAX_UNDO_DEPTH_LIMIT = UINT16_MAX;
 
 class UndoDepth : public Message
 {

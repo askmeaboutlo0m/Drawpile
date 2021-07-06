@@ -80,6 +80,7 @@ public:
 	int maxUsers() const override { return m_maxUsers; }
 	QString title() const override { return m_title; }
 	uint autoResetThreshold() const override { return m_autoResetThreshold; }
+	int undoDepthLimit() const override { return m_undoDepthLimit; }
 	Flags flags() const override { return m_flags; }
 
 	void setPasswordHash(const QByteArray &password) override;
@@ -88,6 +89,7 @@ public:
 	void setTitle(const QString &title) override;
 	void setFlags(Flags f) override;
 	void setAutoResetThreshold(uint limit) override;
+	void setUndoDepthLimit(int depth) override;
 	void joinUser(uint8_t id, const QString &name) override;
 
 	void terminate() override;
@@ -142,6 +144,7 @@ private:
 	QByteArray m_opword;
 	int m_maxUsers;
 	uint m_autoResetThreshold;
+	uint16_t m_undoDepthLimit;
 	Flags m_flags;
 	QStringList m_announcements;
 	QSet<QString> m_ops;

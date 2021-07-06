@@ -70,7 +70,8 @@ Document::Document(QObject *parent)
 	  m_sessionMaxUserCount(0),
 	  m_sessionHistoryMaxSize(0),
 	  m_sessionResetThreshold(0),
-	  m_baseResetThreshold(0)
+	  m_baseResetThreshold(0),
+	  m_sessionUndoDepthLimit(protocol::DEFAULT_UNDO_DEPTH_LIMIT)
 {
 	// Initialize
 	m_client = new net::Client(this);
@@ -265,6 +266,10 @@ void Document::onSessionConfChanged(const QJsonObject &config)
 		}
 		setRoomcode(jc);
 	}
+
+	if(config.contains("undoDepthLimit")) {
+		setSessionUndoDepthLimit(config["undoDepthLimit"].toInt());
+	}
 }
 
 void Document::onAutoresetRequested(int maxSize, bool query)
@@ -392,6 +397,14 @@ void Document::setRoomcode(const QString &roomcode)
 	if(m_roomcode != roomcode) {
 		m_roomcode = roomcode;
 		emit sessionRoomcodeChanged(roomcode);
+	}
+}
+
+void Document::setSessionUndoDepthLimit(int depth)
+{
+	if(m_sessionUndoDepthLimit != depth) {
+		m_sessionUndoDepthLimit = depth;
+		emit sessionUndoDepthLimitChanged(depth);
 	}
 }
 

@@ -84,7 +84,6 @@ public:
 	protocol::MessageList generateSnapshot() const;
 
 	uint8_t localUserId() const;
-
 	uint16_t getAvailableAnnotationId() const;
 
 	QImage selectionToImage(int layerId) const;

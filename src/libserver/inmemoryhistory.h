@@ -60,6 +60,9 @@ public:
 	}
 	uint autoResetThreshold() const override { return m_autoReset; }
 
+	void setUndoDepthLimit(int depth) override;
+	int undoDepthLimit() const override { return m_undoDepthLimit; }
+
 	void addAnnouncement(const QString &url) override { m_announcements.insert(url); }
 	void removeAnnouncement(const QString &url) override { m_announcements.remove(url); }
 	QStringList announcements() const override { return m_announcements.values(); }
@@ -97,6 +100,7 @@ private:
 	QByteArray m_opword;
 	int m_maxUsers;
 	uint m_autoReset;
+	uint16_t m_undoDepthLimit;
 	Flags m_flags;
 };
 

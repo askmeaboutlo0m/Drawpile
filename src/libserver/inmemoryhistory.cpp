@@ -19,6 +19,7 @@
 
 #include "inmemoryhistory.h"
 #include "../libshared/util/passwordhash.h"
+#include "../libshared/net/undo.h"
 
 namespace server {
 
@@ -29,6 +30,7 @@ InMemoryHistory::InMemoryHistory(const QString &id, const QString &alias, const 
 	  m_version(version),
 	  m_maxUsers(254),
 	  m_autoReset(0),
+	  m_undoDepthLimit(protocol::DEFAULT_UNDO_DEPTH_LIMIT),
 	  m_flags()
 {
 }
@@ -52,6 +54,12 @@ void InMemoryHistory::historyAdd(const protocol::MessagePtr &msg)
 void InMemoryHistory::historyReset(const protocol::MessageList &newHistory)
 {
 	m_history = newHistory;
+}
+
+void InMemoryHistory::setUndoDepthLimit(int depth)
+{
+	m_undoDepthLimit = qBound(protocol::MIN_UNDO_DEPTH_LIMIT,
+			depth, protocol::MAX_UNDO_DEPTH_LIMIT);
 }
 
 }

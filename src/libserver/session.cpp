@@ -26,6 +26,7 @@
 
 #include "../libshared/net/control.h"
 #include "../libshared/net/meta.h"
+#include "../libshared/net/undo.h"
 #include "../libshared/record/writer.h"
 #include "../libshared/util/filename.h"
 #include "../libshared/util/passwordhash.h"
@@ -386,6 +387,14 @@ void Session::setSessionConfig(const QJsonObject &conf, Client *changedBy)
 		changes << "changed opword";
 	}
 
+	if(conf.contains("undoDepthLimit")) {
+		m_history->setUndoDepthLimit(conf["undoDepthLimit"].toInt());
+		addToHistory(MessagePtr(new protocol::UndoDepth(
+				changedBy ? changedBy->id() : 0,
+				m_history->undoDepthLimit())));
+		changes << "changed undo depth limit";
+	}
+
 	// Note: this bit is only relayed by the server: it informs
 	// the client whether to send preserved/recorded chat messages
 	// by default.
@@ -538,6 +547,7 @@ void Session::sendUpdatedSessionProperties()
 	conf["deputies"] = m_history->flags().testFlag(SessionHistory::Deputies);
 	conf["hasPassword"] = !m_history->passwordHash().isEmpty();
 	conf["hasOpword"] = !m_history->opwordHash().isEmpty();
+	conf["undoDepthLimit"] = m_history->undoDepthLimit();
 	props.reply["config"] = conf;
 
 	addToHistory(protocol::MessagePtr(new protocol::Command(0, props)));
@@ -616,6 +626,7 @@ void Session::handleClientMessage(Client &client, protocol::MessagePtr msg)
 	case MSG_USER_JOIN:
 	case MSG_USER_LEAVE:
 	case MSG_SOFTRESET:
+	case MSG_UNDO_DEPTH:
 		client.log(Log().about(Log::Level::Warn, Log::Topic::RuleBreak).message("Received server-to-user only command " + msg->messageName()));
 		return;
 	case MSG_DISCONNECT:
