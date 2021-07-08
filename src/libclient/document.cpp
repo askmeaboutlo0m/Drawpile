@@ -402,10 +402,8 @@ void Document::setRoomcode(const QString &roomcode)
 
 void Document::setSessionUndoDepthLimit(int depth)
 {
-	if(m_sessionUndoDepthLimit != depth) {
-		m_sessionUndoDepthLimit = depth;
-		emit sessionUndoDepthLimitChanged(depth);
-	}
+	m_sessionUndoDepthLimit = depth;
+	emit sessionUndoDepthLimitChanged(depth);
 }
 
 void Document::setAutosave(bool autosave)

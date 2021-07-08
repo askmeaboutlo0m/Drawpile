@@ -216,6 +216,7 @@ void Session::joinUser(Client *user, bool host)
 	sendUpdatedAnnouncementList();
 	sendUpdatedBanlist();
 	sendUpdatedMuteList();
+	sendUpdatedSessionProperties();
 
 	m_history->joinUser(user->id(), user->username());
 
