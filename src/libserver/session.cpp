@@ -92,6 +92,8 @@ protocol::MessageList Session::serverSideStateMessages() const
 	if(!trusted.isEmpty())
 		msgs << protocol::MessagePtr(new protocol::TrustedUsers(0, trusted));
 
+	msgs << protocol::MessagePtr(new protocol::UndoDepth(0, m_history->undoDepthLimit()));
+
 	return msgs;
 }
 

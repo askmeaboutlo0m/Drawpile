@@ -71,7 +71,7 @@ Document::Document(QObject *parent)
 	  m_sessionHistoryMaxSize(0),
 	  m_sessionResetThreshold(0),
 	  m_baseResetThreshold(0),
-	  m_sessionUndoDepthLimit(protocol::DEFAULT_UNDO_DEPTH_LIMIT)
+	  m_sessionUndoDepthLimit(-1)
 {
 	// Initialize
 	m_client = new net::Client(this);
@@ -402,8 +402,10 @@ void Document::setRoomcode(const QString &roomcode)
 
 void Document::setSessionUndoDepthLimit(int depth)
 {
-	m_sessionUndoDepthLimit = depth;
-	emit sessionUndoDepthLimitChanged(depth);
+	if(m_sessionUndoDepthLimit != depth) {
+		m_sessionUndoDepthLimit = depth;
+		emit sessionUndoDepthLimitChanged(depth);
+	}
 }
 
 void Document::setAutosave(bool autosave)
