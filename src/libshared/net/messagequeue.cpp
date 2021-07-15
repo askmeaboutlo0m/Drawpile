@@ -119,7 +119,7 @@ MessagePtr MessageQueue::getPending()
 void MessageQueue::send(const MessagePtr &message)
 {
 	if(!m_closeWhenReady) {
-		m_outbox.enqueue(message);
+		appendToOutbox(message);
 		if(m_sendbuflen==0)
 			writeData();
 	}
@@ -128,7 +128,7 @@ void MessageQueue::send(const MessagePtr &message)
 void MessageQueue::send(const MessageList &messages)
 {
 	if(!m_closeWhenReady) {
-		m_outbox << messages;
+		appendAllToOutbox(messages);
 		if(m_sendbuflen==0)
 			writeData();
 	}
@@ -137,7 +137,7 @@ void MessageQueue::send(const MessageList &messages)
 void MessageQueue::sendNow(MessagePtr msg)
 {
 	if(!m_closeWhenReady) {
-		m_outbox.prepend(msg);
+		prependToOutbox(msg);
 		if(m_sendbuflen==0)
 			writeData();
 	}
@@ -160,6 +160,21 @@ void MessageQueue::sendPing()
 	}
 
 	sendNow(MessagePtr(new Ping(0, false)));
+}
+
+void MessageQueue::prependToOutbox(const MessagePtr &msg)
+{
+	m_outbox.prepend(msg);
+}
+
+void MessageQueue::appendToOutbox(const MessagePtr &msg)
+{
+	m_outbox.enqueue(msg);
+}
+
+void MessageQueue::appendAllToOutbox(const MessageList &messages)
+{
+	m_outbox << messages;
 }
 
 int MessageQueue::uploadQueueBytes() const

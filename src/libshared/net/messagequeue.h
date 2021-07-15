@@ -174,6 +174,11 @@ signals:
 	 */
 	void pingPong(qint64 roundtripTime);
 
+protected:
+	virtual void prependToOutbox(const MessagePtr &message);
+	virtual void appendToOutbox(const MessagePtr &message);
+	virtual void appendAllToOutbox(const MessageList &messages);
+
 private slots:
 	void readData();
 	void dataWritten(qint64);

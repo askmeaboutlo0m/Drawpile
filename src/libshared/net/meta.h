@@ -38,6 +38,7 @@ public:
 	static const uint8_t FLAG_AUTH = 0x01; // authenticated user (not a guest)
 	static const uint8_t FLAG_MOD = 0x02;  // user is a moderator
 	static const uint8_t FLAG_BOT = 0x04;  // user is a bot
+	static const uint8_t FLAG_SUPPORTS_UNDO_DEPTH_LIMIT = 0x08;
 
 	UserJoin(uint8_t ctx, uint8_t flags, const QByteArray &name, const QByteArray &avatar) : Message(MSG_USER_JOIN, ctx), m_name(name), m_avatar(avatar), m_flags(flags) { Q_ASSERT(name.length()>0 && name.length()<256); }
 	UserJoin(uint8_t ctx, uint8_t flags, const QString &name, const QByteArray &avatar=QByteArray()) : UserJoin(ctx, flags, name.toUtf8(), avatar) {}
@@ -54,6 +55,7 @@ public:
 	bool isModerator() const { return m_flags & FLAG_MOD; }
 	bool isAuthenticated() const { return m_flags & FLAG_AUTH; }
 	bool isBot() const { return m_flags & FLAG_BOT; }
+	bool supportsUndoDepthLimit() const { return m_flags & FLAG_SUPPORTS_UNDO_DEPTH_LIMIT; }
 
 	QString messageName() const override { return QStringLiteral("join"); }
 

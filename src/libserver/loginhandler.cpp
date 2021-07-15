@@ -77,6 +77,7 @@ void LoginHandler::startLoginProcess()
 		flags << "REPORT";
 	if(m_config->getConfigBool(config::AllowCustomAvatars))
 		flags << "AVATAR";
+	flags << "UNDODEPTHLIMIT";
 
 	greeting.reply["flags"] = flags;
 
@@ -232,6 +233,8 @@ void LoginHandler::handleIdentMessage(const protocol::ServerCommand &cmd)
 		// TODO validate
 		m_client->setAvatar(QByteArray::fromBase64(cmd.kwargs["avatar"].toString().toUtf8()));
 	}
+
+	m_client->setSupportsUndoDepthLimit(cmd.kwargs["supportsUndoDepthLimit"].toBool());
 
 	switch(userAccount.status) {
 	case RegisteredUser::NotFound: {

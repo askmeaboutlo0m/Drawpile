@@ -97,6 +97,9 @@ public:
 	const QByteArray &avatar() const;
 	void setAvatar(const QByteArray &avatar);
 
+	bool supportsUndoDepthLimit() const;
+	void setSupportsUndoDepthLimit(bool supportsUndoDepthLimit);
+
 	/**
 	 * @brief Get the user's authentication ID
 	 *

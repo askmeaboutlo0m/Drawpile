@@ -18,6 +18,7 @@
 */
 
 #include "client.h"
+#include "config.h"
 #include "session.h"
 #include "sessionhistory.h"
 #include "serverlog.h"
@@ -26,6 +27,7 @@
 #include "../libshared/net/messagequeue.h"
 #include "../libshared/net/control.h"
 #include "../libshared/net/meta.h"
+#include "../libshared/net/undo.h"
 
 #include <QSslSocket>
 #include <QStringList>
@@ -35,17 +37,92 @@ namespace server {
 
 using protocol::MessagePtr;
 
+// Sending an undo depth limit to a client that doesn't support them causes them
+// to crash. Not sending it to them causes a potential desync that's fixed by
+// resetting the session and prevented by setting the undo depth limit to 30. So
+// for the sake of compatibility, we'll accept the latter and filter out undo
+// depth limit messages for unsupportive clients. We'll tell the the members of
+// the session that this is the case so that the ops may choose to act on it.
+// Undo depth limit messages are converted to server reply messages that tell
+// the user that the change occurred. This isn't pretty, but it allows us to
+// warn the offending user and keep their catchup message count in sync.
+class UndoLimitFilteringMessageQueue : public protocol::MessageQueue {
+public:
+	UndoLimitFilteringMessageQueue(QTcpSocket *socket, QObject *parent=nullptr)
+		: MessageQueue(socket, parent) {}
+
+	void setSupportsUndoDepthLimit(bool supportsUndoDepthLimit) {
+		m_supportsUndoDepthLimit = supportsUndoDepthLimit;
+	}
+
+protected:
+	void prependToOutbox(const MessagePtr &msg) override
+	{
+		if(msg->type() == protocol::MSG_UNDO_DEPTH && !m_supportsUndoDepthLimit) {
+			MessageQueue::prependToOutbox(convertToCommand(msg));
+		} else {
+			MessageQueue::prependToOutbox(msg);
+		}
+	}
+
+	void appendToOutbox(const MessagePtr &msg) override
+	{
+		if(msg->type() == protocol::MSG_UNDO_DEPTH && !m_supportsUndoDepthLimit) {
+			MessageQueue::appendToOutbox(convertToCommand(msg));
+		} else {
+			MessageQueue::appendToOutbox(msg);
+		}
+	}
+
+	void appendAllToOutbox(const protocol::MessageList &messages) override
+	{
+		if(m_supportsUndoDepthLimit) {
+			MessageQueue::appendAllToOutbox(messages);
+		} else {
+			for (const MessagePtr &msg : messages) {
+				appendToOutbox(msg);
+			}
+		}
+	}
+
+private:
+	MessagePtr convertToCommand(const MessagePtr &msg)
+	{
+		int depth = msg.cast<protocol::UndoDepth>().depth();
+		protocol::ServerReply reply;
+		if(depth == protocol::DEFAULT_UNDO_DEPTH_LIMIT) {
+			reply.type = protocol::ServerReply::MESSAGE;
+			reply.message = tr("Undo limit set to %1.").arg(depth);
+		} else {
+			reply.type = protocol::ServerReply::ALERT;
+			reply.message = tr("Undo limit set to %1. Warning: this is not "
+					"supported by your client, you'll probably desynchronize! "
+					"An operator can fix this by setting the undo limit to %2 "
+					"and performing a session reset. Alternatively, you can "
+					"fix this this by using a newer Drawpile version, such as "
+					"Drawpile %3.")
+				.arg(depth)
+				.arg(protocol::DEFAULT_UNDO_DEPTH_LIMIT)
+				.arg(DRAWPILE_VERSION);
+		}
+		return MessagePtr(new protocol::Command(0, reply));
+	}
+
+	bool m_supportsUndoDepthLimit;
+};
+
 struct Client::Private {
 	QPointer<Session> session;
 	QTcpSocket *socket;
 	ServerLog *logger;
 
-	protocol::MessageQueue *msgqueue;
+	UndoLimitFilteringMessageQueue *msgqueue;
 	protocol::MessageList holdqueue;
 
 	QString username;
 	QString authId;
 	QByteArray avatar;
+	bool supportsUndoDepthLimit;
 	QStringList flags;
 
 	qint64 lastActive = 0;
@@ -70,7 +147,7 @@ struct Client::Private {
 Client::Client(QTcpSocket *socket, ServerLog *logger, QObject *parent)
 	: QObject(parent), d(new Private(socket, logger))
 {
-	d->msgqueue = new protocol::MessageQueue(socket, this);
+	d->msgqueue = new UndoLimitFilteringMessageQueue(socket, this);
 	d->socket->setParent(this);
 
 	connect(d->socket, &QAbstractSocket::disconnected, this, &Client::socketDisconnect);
@@ -97,7 +174,9 @@ protocol::MessagePtr Client::joinMessage() const
 {
 	return protocol::MessagePtr(new protocol::UserJoin(
 			id(),
-			(isAuthenticated() ? protocol::UserJoin::FLAG_AUTH : 0) | (isModerator() ? protocol::UserJoin::FLAG_MOD : 0),
+			(isAuthenticated() ? protocol::UserJoin::FLAG_AUTH : 0) |
+			(isModerator() ? protocol::UserJoin::FLAG_MOD : 0) |
+			(supportsUndoDepthLimit() ? protocol::UserJoin::FLAG_SUPPORTS_UNDO_DEPTH_LIMIT : 0),
 			username(),
 			avatar()
 	));
@@ -209,6 +288,17 @@ void Client::setAvatar(const QByteArray &avatar)
 const QByteArray &Client::avatar() const
 {
 	return d->avatar;
+}
+
+void Client::setSupportsUndoDepthLimit(bool supportsUndoDepthLimit)
+{
+	d->supportsUndoDepthLimit = supportsUndoDepthLimit;
+	d->msgqueue->setSupportsUndoDepthLimit(supportsUndoDepthLimit);
+}
+
+bool Client::supportsUndoDepthLimit() const
+{
+	return d->supportsUndoDepthLimit;
 }
 
 const QString &Client::authId() const

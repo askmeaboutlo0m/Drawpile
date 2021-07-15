@@ -71,6 +71,8 @@ Kwargs UserJoin::kwargs() const
 		flags << "mod";
 	if(isAuthenticated())
 		flags << "auth";
+	if(supportsUndoDepthLimit())
+		flags << "undodepth";
 	if(!flags.isEmpty())
 		kw["flags"] = flags.join(',');
 	return kw;
@@ -83,7 +85,8 @@ UserJoin *UserJoin::fromText(uint8_t ctx, const Kwargs &kwargs)
 	return new UserJoin(
 		ctx,
 		(flags.contains("mod") ? FLAG_MOD : 0) |
-		(flags.contains("auth") ? FLAG_AUTH : 0),
+		(flags.contains("auth") ? FLAG_AUTH : 0) |
+		(flags.contains("undodepth") ? FLAG_SUPPORTS_UNDO_DEPTH_LIMIT : 0),
 		kwargs["name"],
 		QByteArray::fromBase64(kwargs["avatar"].toLatin1())
 		);
