@@ -50,6 +50,7 @@ public:
 private slots:
 	void onCanvasChanged(canvas::CanvasModel *canvas);
 	void onServerLogin();
+	void onUndoDepthLimitChanged(int depth);
 	void detachFromParent();
 	void reattachToParent();
 

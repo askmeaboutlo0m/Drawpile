@@ -62,6 +62,7 @@ ChatBox::ChatBox(Document *doc, QWidget *parent)
 
 	connect(doc, &Document::canvasChanged, this, &ChatBox::onCanvasChanged);
 	connect(doc, &Document::serverLoggedIn, this, &ChatBox::onServerLogin);
+	connect(doc, &Document::sessionUndoDepthLimitChanged, this, &ChatBox::onUndoDepthLimitChanged);
 
 	connect(doc, &Document::sessionPreserveChatChanged, m_chatWidget, &ChatWidget::setPreserveMode);
 	connect(doc->client(), &net::Client::serverMessage, m_chatWidget, &ChatWidget::systemMessage);
@@ -85,6 +86,11 @@ void ChatBox::onCanvasChanged(canvas::CanvasModel *canvas)
 void ChatBox::onServerLogin()
 {
 	m_chatWidget->loggedIn(static_cast<Document*>(sender())->client()->myId());
+}
+
+void ChatBox::onUndoDepthLimitChanged(int depth)
+{
+	m_chatWidget->systemMessage(tr("Undo limit set to %1.").arg(depth));
 }
 
 void ChatBox::focusInput()
