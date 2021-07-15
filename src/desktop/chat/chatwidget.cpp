@@ -464,7 +464,7 @@ void Chat::appendNotification(const QString &message)
 	);
 }
 
-void ChatWidget::userJoined(int id, const QString &name)
+void ChatWidget::userJoined(int id, const QString &name, bool supportsUndoDepthLimit)
 {
 	Q_UNUSED(name);
 
@@ -492,7 +492,9 @@ void ChatWidget::userJoined(int id, const QString &name)
 		return;
 
 	d->announcedUsers << id;
-	const QString msg = tr("%1 joined the session").arg(d->usernameSpan(id));
+	const QString msg = tr(supportsUndoDepthLimit ? "%1 joined the session" :
+			"%1 joined the session (does not support changing the undo limit)")
+		.arg(d->usernameSpan(id));
 	const bool wasAtEnd = d->isAtEnd();
 
 	d->publicChat().appendNotification(msg);

@@ -351,9 +351,10 @@ QString NetStatus::fullAddress() const
 	return addr;
 }
 
-void NetStatus::join(int id, const QString& user)
+void NetStatus::join(int id, const QString& user, bool supportsUndoDepthLimit)
 {
 	Q_UNUSED(id);
+	Q_UNUSED(supportsUndoDepthLimit);
 	message(tr("<b>%1</b> joined").arg(user.toHtmlEscaped()));
 }
 

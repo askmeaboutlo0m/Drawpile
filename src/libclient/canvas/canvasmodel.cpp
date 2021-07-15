@@ -432,14 +432,15 @@ void CanvasModel::metaUserJoin(const protocol::UserJoin &msg)
 		msg.isAuthenticated(),
 		false,
 		false,
-		true
+		true,
+		msg.supportsUndoDepthLimit(),
 	};
 
 	m_userlist->userLogin(u);
 	m_usercursors->setCursorName(msg.contextId(), msg.name());
 	m_usercursors->setCursorAvatar(msg.contextId(), u.avatar);
 
-	emit userJoined(msg.contextId(), msg.name());
+	emit userJoined(msg.contextId(), msg.name(), msg.supportsUndoDepthLimit());
 }
 
 void CanvasModel::metaUserLeave(const protocol::UserLeave &msg)

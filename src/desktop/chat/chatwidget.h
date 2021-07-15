@@ -61,7 +61,7 @@ public slots:
 	//! Display a system message
 	void systemMessage(const QString& message, bool isAlert=false);
 
-	void userJoined(int id, const QString &name);
+	void userJoined(int id, const QString &name, bool supportsUndoDepthLimit);
 	void userParted(int id);
 	void kicked(const QString &kickedBy);
 

@@ -46,6 +46,7 @@ struct User {
 	bool isLocked;
 	bool isMuted;
 	bool isOnline;
+	bool supportsUndoDepthLimit;
 };
 
 class OnlineUserListModel;

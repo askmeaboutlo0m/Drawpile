@@ -76,7 +76,7 @@ public slots:
 	//! Download over, hide the progress bar
 	void hideDownloadProgress();
 
-	void join(int id, const QString& user);
+	void join(int id, const QString& user, bool supportsUndoDepthLimit);
 	void leave(int id, const QString& user);
 
 	//! This user was kicked off the session

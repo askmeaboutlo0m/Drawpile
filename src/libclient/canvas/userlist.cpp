@@ -141,6 +141,7 @@ void UserListModel::userLogin(const User &user)
 			u.isBot = user.isBot;
 			u.isMuted = user.isMuted;
 			u.isOnline = true;
+			u.supportsUndoDepthLimit = user.supportsUndoDepthLimit;
 
 			emit dataChanged(index(i, 0), index(i, columnCount()-1));
 			return;

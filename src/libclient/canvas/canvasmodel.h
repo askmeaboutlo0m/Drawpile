@@ -145,7 +145,7 @@ signals:
 	void chatMessageReceived(const protocol::MessagePtr &msg);
 	void markerMessageReceived(int id, const QString &message);
 
-	void userJoined(int id, const QString &name);
+	void userJoined(int id, const QString &name, bool supportsUndoDepthLimit);
 	void userLeft(int id, const QString &name);
 
 	void canvasLocked(bool locked);
