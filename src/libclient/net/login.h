@@ -149,6 +149,11 @@ public:
 	bool supportsAbuseReports() const { return m_canReport; }
 
 	/**
+	 * @brief Does the server allow changing the undo depth limit?
+	 */
+	bool supportsUndoDepthLimit() const { return m_supportsUndoDepthLimit; }
+
+	/**
 	 * @brief Check if the user has the given flag
 	 *
 	 * This is only valid after the user has identified succesfully

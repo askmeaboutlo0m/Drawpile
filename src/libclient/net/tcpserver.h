@@ -59,7 +59,8 @@ public:
 	bool supportsAbuseReports() const override { return m_supportsAbuseReports; }
 
 signals:
-	void loggedIn(const QUrl &url, uint8_t userid, bool join, bool auth, bool moderator, bool hasAutoreset);
+	void loggedIn(const QUrl &url, uint8_t userid, bool join, bool auth,
+			bool moderator, bool hasAutoreset, bool supportsUndoDepthLimit);
 	void loggingOut();
 	void serverDisconnected(const QString &message, const QString &errorcode, bool localDisconnect);
 

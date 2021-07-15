@@ -175,8 +175,8 @@ void TcpServer::loginSuccess()
 		m_loginstate->mode() == LoginHandler::Mode::Join,
 		m_loginstate->isAuthenticated(),
 		m_loginstate->hasUserFlag("MOD"),
-		!m_loginstate->sessionFlags().contains("NOAUTORESET")
-		);
+		!m_loginstate->sessionFlags().contains("NOAUTORESET"),
+		m_loginstate->supportsUndoDepthLimit());
 
 	m_loginstate->deleteLater();
 	m_loginstate = nullptr;

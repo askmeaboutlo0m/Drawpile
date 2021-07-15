@@ -201,6 +201,12 @@ void SessionSettingsDialog::setAuthenticated(bool auth)
 	m_isAuth = auth;
 }
 
+void SessionSettingsDialog::setServerSupportsUndoDepthLimit(bool serverSupportsUndoDepthLimit)
+{
+	m_serverSupportsUndoDepthLimit = serverSupportsUndoDepthLimit;
+	updateUndoLimitLabel();
+}
+
 void SessionSettingsDialog::onCanvasChanged(canvas::CanvasModel *canvas)
 {
 	if(!canvas)
@@ -367,8 +373,12 @@ void SessionSettingsDialog::updatePasswordLabel(QLabel *label)
 
 void SessionSettingsDialog::updateUndoLimitLabel()
 {
-	QString txt = m_op ? QStringLiteral("<b>%1</b> (<a href=\"#\">change</a>)") : QStringLiteral("<b>%1</b>");
-	m_ui->undoLimit->setText(txt.arg(m_ui->undoLimit->property("undoDepthLimit").toInt()));
+	if(m_serverSupportsUndoDepthLimit) {
+		QString txt = m_op ? QStringLiteral("<b>%1</b> (<a href=\"#\">change</a>)") : QStringLiteral("<b>%1</b>");
+		m_ui->undoLimit->setText(txt.arg(m_ui->undoLimit->property("undoDepthLimit").toInt()));
+	} else {
+		m_ui->undoLimit->setText(QStringLiteral("%1 (not changeable)").arg(protocol::DEFAULT_UNDO_DEPTH_LIMIT));
+	}
 }
 
 void SessionSettingsDialog::sendSessionConf()

@@ -1668,6 +1668,7 @@ void MainWindow::onServerLogin()
 	m_sessionSettings->setPersistenceEnabled(m_doc->client()->serverSuppotsPersistence());
 	m_sessionSettings->setAutoResetEnabled(m_doc->client()->sessionSupportsAutoReset());
 	m_sessionSettings->setAuthenticated(m_doc->client()->isAuthenticated());
+	m_sessionSettings->setServerSupportsUndoDepthLimit(m_doc->client()->serverSupportsUndoDepthLimit());
 	setDrawingToolsEnabled(true);
 	m_modtools->setEnabled(m_doc->client()->isModerator());
 	getAction("reportabuse")->setEnabled(m_doc->client()->serverSupportsReports());

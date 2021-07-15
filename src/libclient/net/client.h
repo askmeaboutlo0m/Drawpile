@@ -137,6 +137,8 @@ public:
 
 	bool sessionSupportsAutoReset() const { return m_supportsAutoReset; }
 
+	bool serverSupportsUndoDepthLimit() const { return m_supportsUndoDepthLimit; }
+
 	/**
 	 * @brief Get the number of bytes waiting to be sent
 	 * @return upload queue length
@@ -202,7 +204,8 @@ signals:
 
 private slots:
 	void handleMessage(const protocol::MessagePtr &msg);
-	void handleConnect(const QUrl &url, uint8_t userid, bool join, bool auth, bool moderator, bool supportsAutoReset);
+	void handleConnect(const QUrl &url, uint8_t userid, bool join, bool auth,
+			bool moderator, bool supportsAutoReset, bool supportsUndoDepthLimit);
 	void handleDisconnect(const QString &message, const QString &errorcode, bool localDisconnect);
 
 private:
@@ -220,6 +223,7 @@ private:
 	bool m_moderator;
 	bool m_isAuthenticated;
 	bool m_supportsAutoReset;
+	bool m_supportsUndoDepthLimit;
 
 	int m_catchupTo;
 	int m_caughtUp;

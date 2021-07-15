@@ -95,13 +95,15 @@ QUrl Client::sessionUrl(bool includeUser) const
 	return url;
 }
 
-void Client::handleConnect(const QUrl &url, uint8_t userid, bool join, bool auth, bool moderator, bool supportsAutoReset)
+void Client::handleConnect(const QUrl &url, uint8_t userid, bool join, bool auth,
+		bool moderator, bool supportsAutoReset, bool supportsUndoDepthLimit)
 {
 	m_lastUrl = url;
 	m_myId = userid;
 	m_moderator = moderator;
 	m_isAuthenticated = auth;
 	m_supportsAutoReset = supportsAutoReset;
+	m_supportsUndoDepthLimit = supportsUndoDepthLimit;
 
 	emit serverLoggedin(join);
 }
