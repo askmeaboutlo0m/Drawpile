@@ -408,6 +408,7 @@ private:
 	bool m_needUserPassword;
 	bool m_supportsCustomAvatars;
 	bool m_supportsExtAuthAvatars;
+	bool m_supportsUndoDepthLimit;
 
 	// User flags
 	QStringList m_userFlags;

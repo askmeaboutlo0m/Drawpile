@@ -174,6 +174,7 @@ void LoginHandler::expectHello(const protocol::ServerReply &msg)
 	m_needUserPassword = false;
 	m_canPersist = false;
 	m_canReport = false;
+	m_supportsUndoDepthLimit = false;
 
 	bool startTls = false;
 
@@ -192,6 +193,8 @@ void LoginHandler::expectHello(const protocol::ServerReply &msg)
 			m_canReport = true;
 		} else if(flag == "AVATAR") {
 			m_supportsCustomAvatars = true;
+		} else if(flag == "UNDODEPTHLIMIT") {
+			m_supportsUndoDepthLimit = true;
 		} else {
 			qWarning() << "Unknown server capability:" << flag;
 		}
@@ -291,6 +294,8 @@ void LoginHandler::sendIdentity()
 		// avatar needs only be sent once
 		m_avatar = QByteArray();
 	}
+
+	cmd.kwargs["supportsUndoDepthLimit"] = true;
 
 	m_state = EXPECT_IDENTIFIED;
 	send(cmd);
